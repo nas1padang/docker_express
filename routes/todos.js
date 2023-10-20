@@ -37,6 +37,24 @@ router.post('/', async (req, res) => {
     }
 });
 
+// edit todo
+router.put('/:id', async (req, res) => {
+    try {
+        const todo = await Todo.findOne({
+            where: { id: req.params.id, deletedAt: null }
+        });
+
+        if (!todo) return res.status(404).json({ error: 'Todo not found' });
+        todo.title = req.body.title || todo.title;
+
+        await todo.save();
+
+        res.json(todo);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 // delete soft service
 router.delete('/:id', async (req, res) => {
@@ -48,10 +66,12 @@ router.delete('/:id', async (req, res) => {
 
 
         todo.deletedAt = new Date();
-        await todo.save();
+        await todo.destroy();
 
         res.json({ message: 'Todo deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
+
+module.exports = router
